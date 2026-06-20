@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "ProDraft Email Polisher",
+  "version": "1.0",
+  "description": "Turn your messy thoughts into professional emails.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Open ProDraft"
+  },
+  "permissions": [
+    "clipboardWrite"
+  ]
+}
