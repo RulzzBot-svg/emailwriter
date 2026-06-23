@@ -4,57 +4,121 @@ import {
   Copy, 
   CheckCircle2, 
   RefreshCw, 
-  Briefcase, 
-  ShieldAlert, 
-  Coffee,
   Sparkles,
-  ArrowRight
+  Leaf
 } from 'lucide-react';
 
 export default function App() {
   const [rawInput, setRawInput] = useState('');
-  const [tone, setTone] = useState('Professional');
+  const [tone, setTone] = useState('professional');
+  const [shortSimple, setShortSimple] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [output, setOutput] = useState('');
   const [copied, setCopied] = useState(false);
 
   // Tones available
   const tones = [
-    { id: 'Professional', icon: <Briefcase size={16} />, desc: 'Standard Corporate' },
-    { id: 'Apologetic', icon: <ShieldAlert size={16} />, desc: 'Soft & Polite' },
-    { id: 'Direct', icon: <ArrowRight size={16} />, desc: 'Firm & Clear' },
-    { id: 'Friendly', icon: <Coffee size={16} />, desc: 'Warm & Casual' }
+    { id: 'professional', emoji: '💼', label: 'Professional', instruction: 'Use a polished, business-professional tone.' },
+    { id: 'casual', emoji: '😌', label: 'Casual', instruction: 'Use a relaxed, natural conversational tone while staying clear.' },
+    { id: 'formal', emoji: '📜', label: 'Formal', instruction: 'Use a formal, precise, and respectful corporate tone.' },
+    { id: 'friendly', emoji: '😊', label: 'Friendly', instruction: 'Use a warm, approachable, and positive tone.' },
+    { id: 'empathetic', emoji: '🤝', label: 'Empathetic', instruction: 'Use a considerate and understanding tone.' },
+    { id: 'urgent', emoji: '⚡', label: 'Urgent', instruction: 'Use an urgent tone. Create a sense of urgency, and focus on action.' }
   ];
 
-  // Simulated AI Logic (In the real app, this sends rawInput to OpenAI API)
-  const generateEmail = () => {
+  const selectedTone = tones.find((t) => t.id === tone) || tones[0];
+
+  // The REAL AI Logic connecting to Gemini
+  const generateEmail = async () => {
     if (!rawInput.trim()) return;
     
+    // Using Vite's env variable system. Paste key in the quotes if .env still gives you trouble!
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || ""; 
+
+    if (!apiKey) {
+      setOutput("Error: API Key is missing. Please check your .env file or paste it directly into the code.");
+      return;
+    }
+
     setIsGenerating(true);
     setOutput('');
     setCopied(false);
 
-    // Fake API delay to simulate AI thinking
-    setTimeout(() => {
-      let generatedText = "";
-      const lowerInput = rawInput.toLowerCase();
+    try {
+      const brevityInstruction = shortSimple
+        ? 'Keep the email short, simple, and easy to understand.'
+        : 'Include enough detail to be clear while staying professional.';
 
-      if (lowerInput.includes('late') || lowerInput.includes('delay')) {
-        if (tone === 'Apologetic') {
-          generatedText = "Hi [Name],\n\nPlease accept my sincere apologies, but there will be a slight delay with the current project. We encountered an unexpected bottleneck with the data retrieval, but my team is actively resolving it. I will have this on your desk by [Time/Date].\n\nThank you for your patience and understanding,\nRaul";
-        } else {
-          generatedText = "Hi [Name],\n\nI want to provide a quick update on the project status. We are experiencing a minor delay due to outstanding data dependencies. We are on track to have everything finalized and delivered to you by [Time/Date]. \n\nBest regards,\nRaul";
-        }
-      } else if (lowerInput.includes('sick') || lowerInput.includes('doctor')) {
-        generatedText = "Hi Team,\n\nPlease note that I am feeling under the weather today and will need to take a sick day to recover. I will be offline and monitoring emails only for absolute emergencies. [Colleague Name] can assist with any immediate needs.\n\nBest,\nRaul";
-      } else {
-        // Generic response for the demo if keywords don't match
-        generatedText = `Hi [Name],\n\nI am writing to follow up regarding our recent discussion. ${rawInput.charAt(0).toUpperCase() + rawInput.slice(1)}.\n\nPlease let me know if you need any further clarification.\n\nBest,\nRaul`;
+      const prompt = `You are a professional email copywriter. Turn the following messy notes into a clear corporate email body.
+      ${selectedTone.instruction}
+      ${brevityInstruction}
+      Do not include a subject line. Return only the email body.
+      Notes: ${rawInput}`;
+      
+      let data = null;
+      let success = false;
+      let lastError = '';
+      let delay = 1000;
+      const modelName = 'gemini-2.5-flash';
+
+      // Calling the Gemini API with exponential backoff retries (from your extension!)
+      for (let i = 0; i < 5; i++) {
+          try {
+              const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey.trim()}`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                      contents: [{ parts: [{ text: prompt }] }]
+                  })
+              });
+              
+              if (response.ok) {
+                  data = await response.json();
+                  success = true;
+                  break;
+              }
+
+              let errorPayload = null;
+              try {
+                  errorPayload = await response.json();
+              } catch (parseErr) {
+                  errorPayload = null;
+              }
+
+              lastError = errorPayload?.error?.message || `HTTP Error ${response.status}`;
+
+              // Do not retry client-side errors except 429 (Too Many Requests).
+              if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+                  break;
+              }
+          } catch (err) {
+              lastError = err?.message || 'Network error while contacting Gemini API.';
+          }
+          
+          if (!success && i < 4) {
+              await new Promise(resolve => setTimeout(resolve, delay));
+              delay *= 2;
+          }
       }
 
-      setOutput(generatedText);
+      if (!success || !data) {
+          throw new Error(lastError);
+      }
+      
+      const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      if (!generatedText.trim()) {
+          throw new Error('Gemini returned an empty response.');
+      }
+      
+      setOutput(generatedText.trim());
+
+    } catch (error) {
+      setOutput(`Whoops, Gemini request failed: ${error.message}`);
+    } finally {
       setIsGenerating(false);
-    }, 1500); // 1.5 second fake delay
+    }
   };
 
   const handleCopy = () => {
@@ -110,23 +174,55 @@ export default function App() {
             <label className="block text-sm font-semibold text-slate-300 mb-2">
               2. Choose the vibe
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {tones.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTone(t.id)}
-                  className={`flex items-center gap-2 p-3 rounded-lg border text-left transition-all ${
-                    tone === t.id 
-                      ? 'bg-blue-500/10 border-blue-500 text-blue-400' 
-                      : 'bg-slate-900 border-slate-700 text-slate-400 hover:bg-slate-800'
+            <div className="rounded-xl border border-slate-700 bg-slate-900 p-3">
+              <select
+                value={tone}
+                onChange={(e) => setTone(e.target.value)}
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2.5 text-sm font-medium text-slate-100 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
+              >
+                {tones.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {`${t.emoji} ${t.label}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Step 3: Short & Simple Toggle */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-900 p-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-200">Keep response short & simple</p>
+                <p className="text-xs text-slate-400">Uses your selected tone with fewer words.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShortSimple((prev) => !prev)}
+                aria-pressed={shortSimple}
+                className={`group relative inline-flex h-11 w-11 items-center justify-center rounded-full border transition-all duration-300 ${
+                  shortSimple
+                    ? 'bg-emerald-300/25 border-emerald-200 text-emerald-200 shadow-[0_0_22px_rgba(110,231,183,0.45)]'
+                    : 'bg-slate-800 border-slate-600 text-slate-400'
+                }`}
+              >
+                {shortSimple && (
+                  <span className="absolute h-11 w-11 rounded-full bg-emerald-200/35 animate-ping" />
+                )}
+                <Leaf
+                  size={20}
+                  className={`relative z-10 transition-all duration-300 ${
+                    shortSimple ? 'scale-110 rotate-6 fill-emerald-200 text-emerald-200' : 'scale-100 rotate-0'
+                  }`}
+                />
+                <span
+                  className={`absolute -bottom-7 text-[10px] font-semibold uppercase tracking-wide transition-colors duration-300 ${
+                    shortSimple ? 'text-emerald-300' : 'text-slate-500'
                   }`}
                 >
-                  {t.icon}
-                  <div>
-                    <div className="text-sm font-medium">{t.id}</div>
-                  </div>
-                </button>
-              ))}
+                  {shortSimple ? 'ON' : 'OFF'}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -155,10 +251,21 @@ export default function App() {
             )}
           </button>
 
+          {output && (
+            <button
+              onClick={generateEmail}
+              disabled={!rawInput.trim() || isGenerating}
+              className="w-full py-2.5 rounded-xl font-semibold text-slate-200 flex justify-center items-center gap-2 transition-all mb-6 border border-slate-600 bg-slate-700/50 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw size={18} className={isGenerating ? 'animate-spin' : ''} />
+              Regenerate with same tone
+            </button>
+          )}
+
           {/* Output Section */}
           <div className="flex-1 flex flex-col">
             <label className="block text-sm font-semibold text-slate-300 mb-2">
-              3. Your Polished Email
+              4. Your Polished Email
             </label>
             <div className="relative flex-1">
               <textarea 

@@ -9,5 +9,8 @@
   },
   "permissions": [
     "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*"
   ]
 }
