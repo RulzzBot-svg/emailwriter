@@ -1,9 +1,19 @@
 (function (global) {
   const STORAGE_KEY = 'prodraftTheme';
-  const DEFAULT_THEME = 'dark';
+  const DEFAULT_THEME = 'oreo-mix';
+
+  const THEMES = [
+    { id: 'oreo-mix', label: 'Oreo Mix' },
+    { id: 'cherryvines', label: 'Cherryvines' },
+    { id: 'dracula', label: 'Dracula' },
+    { id: 'corporate-light', label: 'Clean Slate' },
+    { id: 'midnight-blue', label: 'Midnight Blue' },
+  ];
+
+  const THEME_IDS = new Set(THEMES.map((theme) => theme.id));
 
   function normalizeTheme(theme) {
-    return theme === 'light' ? 'light' : 'dark';
+    return THEME_IDS.has(theme) ? theme : DEFAULT_THEME;
   }
 
   async function getTheme() {
@@ -31,22 +41,23 @@
     }
   }
 
-  function themeToggleLabel(theme) {
-    return normalizeTheme(theme) === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+  function getThemeOptions() {
+    return THEMES.slice();
   }
 
-  function themeToggleIcon(theme) {
-    return normalizeTheme(theme) === 'dark' ? '☀️' : '🌙';
+  function getThemeLabel(theme) {
+    return THEMES.find((entry) => entry.id === normalizeTheme(theme))?.label || 'Theme';
   }
 
   global.ProDraftTheme = {
     STORAGE_KEY,
     DEFAULT_THEME,
+    THEMES,
     getTheme,
     setTheme,
     applyTheme,
-    themeToggleLabel,
-    themeToggleIcon,
+    getThemeOptions,
+    getThemeLabel,
     normalizeTheme,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : window);

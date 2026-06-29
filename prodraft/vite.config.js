@@ -76,6 +76,9 @@ function readRawBody(req) {
 function sendJson(res, statusCode, payload, headers = {}) {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-ProDraft-Client-Id');
   Object.entries(headers).forEach(([key, value]) => {
     res.setHeader(key, value);
   });
@@ -85,6 +88,15 @@ function sendJson(res, statusCode, payload, headers = {}) {
 function createApiMiddleware({ apiKey }) {
   return async (req, res) => {
     const url = req.url?.split('?')[0];
+
+    if (req.method === 'OPTIONS' && url?.startsWith('/api/')) {
+      res.statusCode = 204;
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-ProDraft-Client-Id');
+      res.end();
+      return true;
+    }
 
     if (req.method === 'GET' && url === '/api/usage') {
       try {

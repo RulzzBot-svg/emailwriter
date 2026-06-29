@@ -339,6 +339,9 @@ export default function App() {
       <footer className="site-footer">
         <p>ProDraft generates drafts only — it never sends email on your behalf.</p>
         <p className="footer-muted">Works with Gmail, Outlook on the web, and Yahoo Mail.</p>
+        <p className="footer-muted">
+          <a href="/privacy.html">Privacy policy</a>
+        </p>
       </footer>
     </div>
   );

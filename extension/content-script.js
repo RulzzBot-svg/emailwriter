@@ -28,7 +28,7 @@ const state = {
   undoSnapshot: null,
   undoTimer: null,
   theme: 'dark',
-  themeToggle: null,
+  themeSelect: null,
   usageText: null,
   upgradeButton: null,
   manageButton: null,
@@ -178,14 +178,13 @@ function scheduleUndo(previousText) {
 }
 
 async function applyTheme(theme) {
-  const { applyTheme: applyThemeAttr, themeToggleIcon, themeToggleLabel } = globalThis.ProDraftTheme;
+  const { applyTheme: applyThemeAttr } = globalThis.ProDraftTheme;
   state.theme = theme;
   applyThemeAttr(state.bubble, theme);
   applyThemeAttr(state.panel, theme);
 
-  if (state.themeToggle) {
-    state.themeToggle.textContent = themeToggleIcon(theme);
-    state.themeToggle.setAttribute('aria-label', themeToggleLabel(theme));
+  if (state.themeSelect) {
+    state.themeSelect.value = theme;
   }
 }
 
@@ -194,11 +193,9 @@ async function initTheme() {
   await applyTheme(theme);
 }
 
-async function toggleTheme() {
-  const next = await globalThis.ProDraftTheme.setTheme(
-    state.theme === 'dark' ? 'light' : 'dark',
-  );
-  await applyTheme(next);
+async function onThemeChange(nextTheme) {
+  const theme = await globalThis.ProDraftTheme.setTheme(nextTheme);
+  await applyTheme(theme);
 }
 
 async function getClientId() {
@@ -273,13 +270,13 @@ function ensureUi() {
   state.bubble = document.createElement('button');
   state.bubble.className = 'prodraft-compose-bubble';
   state.bubble.type = 'button';
-  state.bubble.setAttribute('data-prodraft-theme', 'dark');
+  state.bubble.setAttribute('data-prodraft-theme', 'oreo-mix');
   state.bubble.innerHTML = '<span class="prodraft-bubble-label">Polish</span>';
   state.bubble.title = 'Rewrite with ProDraft';
 
   state.panel = document.createElement('section');
   state.panel.className = 'prodraft-compose-panel';
-  state.panel.setAttribute('data-prodraft-theme', 'dark');
+  state.panel.setAttribute('data-prodraft-theme', 'oreo-mix');
   state.panel.innerHTML = `
     <div class="prodraft-panel-header">
       <div class="prodraft-header-brand">
@@ -290,7 +287,7 @@ function ensureUi() {
         </div>
       </div>
       <div class="prodraft-header-actions">
-        <button class="prodraft-theme-toggle" type="button" aria-label="Switch to light theme">☀️</button>
+        <select class="prodraft-theme-select" aria-label="Color theme"></select>
         <button class="prodraft-close" type="button" aria-label="Close">×</button>
       </div>
     </div>
@@ -310,13 +307,15 @@ function ensureUi() {
           </button>
         </div>
       </div>
-      <div class="prodraft-field">
-        <label for="prodraft-notes">Your notes</label>
-        <textarea id="prodraft-notes" class="prodraft-textarea" data-prodraft-ui="true" placeholder="Your compose text appears here."></textarea>
-      </div>
-      <div class="prodraft-field">
-        <label for="prodraft-result">Polished result</label>
-        <textarea id="prodraft-result" class="prodraft-textarea" data-prodraft-ui="true" placeholder="Polished output appears here." readonly></textarea>
+      <div class="prodraft-editor-row">
+        <div class="prodraft-field">
+          <label for="prodraft-notes">Your notes</label>
+          <textarea id="prodraft-notes" class="prodraft-textarea" data-prodraft-ui="true" placeholder="Your compose text appears here."></textarea>
+        </div>
+        <div class="prodraft-field">
+          <label for="prodraft-result">Polished result</label>
+          <textarea id="prodraft-result" class="prodraft-textarea" data-prodraft-ui="true" placeholder="Polished output appears here." readonly></textarea>
+        </div>
       </div>
       <div class="prodraft-status" data-state="idle"></div>
       <div class="prodraft-actions">
@@ -324,14 +323,16 @@ function ensureUi() {
         <button id="prodraft-replace" class="prodraft-button prodraft-button-secondary" type="button" disabled>Replace</button>
         <button id="prodraft-copy" class="prodraft-button prodraft-button-secondary" type="button" disabled>Copy</button>
       </div>
-      <div class="prodraft-usage">
-        <p class="prodraft-usage-text"></p>
-        <div class="prodraft-usage-actions">
-          <button id="prodraft-upgrade" class="prodraft-button prodraft-button-primary" type="button" style="display:none;">Upgrade</button>
-          <button id="prodraft-manage" class="prodraft-button prodraft-button-secondary" type="button" style="display:none;">Manage</button>
+      <div class="prodraft-footer-row">
+        <div class="prodraft-usage">
+          <p class="prodraft-usage-text"></p>
+          <div class="prodraft-usage-actions">
+            <button id="prodraft-upgrade" class="prodraft-button prodraft-button-primary" type="button" style="display:none;">Upgrade</button>
+            <button id="prodraft-manage" class="prodraft-button prodraft-button-secondary" type="button" style="display:none;">Manage</button>
+          </div>
         </div>
+        <button id="prodraft-undo" class="prodraft-button prodraft-button-secondary prodraft-undo" type="button" disabled>Undo replace</button>
       </div>
-      <button id="prodraft-undo" class="prodraft-button prodraft-button-secondary prodraft-undo" type="button" disabled>Undo replace</button>
     </div>
   `;
 
@@ -347,10 +348,17 @@ function ensureUi() {
   state.replaceButton = state.panel.querySelector('#prodraft-replace');
   state.copyButton = state.panel.querySelector('#prodraft-copy');
   state.undoButton = state.panel.querySelector('#prodraft-undo');
-  state.themeToggle = state.panel.querySelector('.prodraft-theme-toggle');
+  state.themeSelect = state.panel.querySelector('.prodraft-theme-select');
   state.usageText = state.panel.querySelector('.prodraft-usage-text');
   state.upgradeButton = state.panel.querySelector('#prodraft-upgrade');
   state.manageButton = state.panel.querySelector('#prodraft-manage');
+
+  globalThis.ProDraftTheme.getThemeOptions().forEach(({ id, label }) => {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = label;
+    state.themeSelect.appendChild(option);
+  });
 
   initTheme();
 
@@ -362,9 +370,9 @@ function ensureUi() {
     openPanel();
   });
 
-  state.themeToggle.addEventListener('click', (event) => {
+  state.themeSelect.addEventListener('change', (event) => {
     event.stopPropagation();
-    toggleTheme();
+    onThemeChange(event.target.value);
   });
 
   state.upgradeButton.addEventListener('click', async (event) => {

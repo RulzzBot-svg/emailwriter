@@ -1,13 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const { buildEmailPrompt, generateEmail, TONES, fetchUsage, startCheckout, openBillingPortal } = globalThis.ProDraftShared;
   const { getClientId } = globalThis.ProDraftClient;
-  const {
-    getTheme,
-    setTheme,
-    applyTheme,
-    themeToggleIcon,
-    themeToggleLabel,
-  } = globalThis.ProDraftTheme;
+  const { getTheme, setTheme, applyTheme, getThemeOptions } = globalThis.ProDraftTheme;
   const apiBase = String(globalThis.PRODRAFT_API_BASE_URL || '').trim();
 
   const generateBtn = document.getElementById('generateBtn');
@@ -16,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const toneSelect = document.getElementById('toneSelect');
   const shortToggle = document.getElementById('shortToggle');
   const outputArea = document.getElementById('outputArea');
-  const themeToggle = document.getElementById('themeToggle');
+  const themeSelect = document.getElementById('themeSelect');
   const usageText = document.getElementById('usageText');
   const upgradeBtn = document.getElementById('upgradeBtn');
   const manageBtn = document.getElementById('manageBtn');
@@ -24,14 +18,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const clientId = await getClientId();
   let currentTheme = await getTheme();
   applyTheme(document.body, currentTheme);
-  themeToggle.textContent = themeToggleIcon(currentTheme);
-  themeToggle.setAttribute('aria-label', themeToggleLabel(currentTheme));
 
-  themeToggle.addEventListener('click', async () => {
-    currentTheme = await setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+  getThemeOptions().forEach(({ id, label }) => {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = label;
+    if (id === currentTheme) {
+      option.selected = true;
+    }
+    themeSelect.appendChild(option);
+  });
+
+  themeSelect.addEventListener('change', async () => {
+    currentTheme = await setTheme(themeSelect.value);
     applyTheme(document.body, currentTheme);
-    themeToggle.textContent = themeToggleIcon(currentTheme);
-    themeToggle.setAttribute('aria-label', themeToggleLabel(currentTheme));
   });
 
   async function refreshUsage() {

@@ -56,6 +56,45 @@
     return payload?.error?.usage || null;
   }
 
+  function isExtensionRuntime() {
+    return typeof chrome !== 'undefined' && Boolean(chrome.runtime?.id);
+  }
+
+  function extensionFetch(url, options = {}) {
+    return new Promise((resolve, reject) => {
+      try {
+        chrome.runtime.sendMessage({ type: 'prodraft:fetch', url, options }, (result) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+            return;
+          }
+          if (!result) {
+            reject(new TypeError('Failed to fetch'));
+            return;
+          }
+          if (result.networkError) {
+            reject(new TypeError(result.message || 'Failed to fetch'));
+            return;
+          }
+          resolve({
+            ok: result.ok,
+            status: result.status,
+            json: () => Promise.resolve(JSON.parse(result.body || '{}')),
+          });
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  function prodraftFetch(url, options) {
+    if (isExtensionRuntime()) {
+      return extensionFetch(url, options);
+    }
+    return fetch(url, options);
+  }
+
   async function generateEmail({
     apiBase,
     prompt,
@@ -78,7 +117,7 @@
 
     for (let attempt = 0; attempt < maxRetries; attempt += 1) {
       try {
-        const response = await fetch(`${base}/api/generate-email`, {
+        const response = await prodraftFetch(`${base}/api/generate-email`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -109,7 +148,14 @@
           break;
         }
       } catch (error) {
-        lastError = error?.message || lastError;
+        if (error?.name === 'TypeError' && /fetch|network/i.test(error?.message || '')) {
+          const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(base);
+          lastError = isLocal
+            ? 'Cannot reach ProDraft at localhost. Start `npm run dev` in prodraft/, or point PRODRAFT_API_BASE_URL to your live Vercel site and reload the extension.'
+            : `Cannot reach ProDraft API at ${base}. Reload the extension at chrome://extensions and try again.`;
+        } else {
+          lastError = error?.message || lastError;
+        }
       }
 
       if (attempt < maxRetries - 1) {
@@ -128,7 +174,7 @@
 
   async function fetchUsage({ apiBase, clientId }) {
     const base = String(apiBase || '').replace(/\/$/, '');
-    const response = await fetch(`${base}/api/usage`, {
+    const response = await prodraftFetch(`${base}/api/usage`, {
       headers: {
         'X-ProDraft-Client-Id': clientId,
       },
@@ -144,7 +190,7 @@
 
   async function startCheckout({ apiBase, clientId, email = '' }) {
     const base = String(apiBase || '').replace(/\/$/, '');
-    const response = await fetch(`${base}/api/billing/create-checkout`, {
+    const response = await prodraftFetch(`${base}/api/billing/create-checkout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -163,7 +209,7 @@
 
   async function openBillingPortal({ apiBase, clientId }) {
     const base = String(apiBase || '').replace(/\/$/, '');
-    const response = await fetch(`${base}/api/billing/portal`, {
+    const response = await prodraftFetch(`${base}/api/billing/portal`, {
       method: 'POST',
       headers: {
         'X-ProDraft-Client-Id': clientId,

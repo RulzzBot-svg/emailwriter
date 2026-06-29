@@ -1,6 +1,12 @@
 import { handlePortalRequest } from '../handlers.js';
+import { applyCors, handleCorsPreflight } from '../cors.js';
 
 export default async function handler(req, res) {
+  if (handleCorsPreflight(req, res)) {
+    return;
+  }
+  applyCors(res);
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: { message: 'Method not allowed.' } });
     return;

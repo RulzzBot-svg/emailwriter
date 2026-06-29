@@ -6,6 +6,7 @@
   "main": "electron/main.cjs",
   "scripts": {
     "sync:extension-config": "node scripts/sync-extension-config.cjs",
+    "pack:extension": "node scripts/pack-extension.cjs",
     "predev": "npm run sync:extension-config",
     "prebuild": "npm run sync:extension-config",
     "prestart": "npm run sync:extension-config",

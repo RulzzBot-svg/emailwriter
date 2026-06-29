@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ProDraft Email Polisher",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Turn your messy thoughts into professional emails.",
   "action": {
     "default_popup": "popup.html",
@@ -12,10 +12,14 @@
     "storage",
     "tabs"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": [
     "http://localhost:5173/*",
     "http://127.0.0.1:5173/*",
-    "http://127.0.0.1/*"
+    "http://127.0.0.1/*",
+    "https://emailwriter-zeta.vercel.app/*"
   ],
   "content_scripts": [
     {

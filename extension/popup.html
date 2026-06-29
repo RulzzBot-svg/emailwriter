@@ -3,38 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body[data-prodraft-theme='dark'] {
-      --pd-bg: #0b1220;
-      --pd-surface: #111b2e;
-      --pd-line: #24324a;
-      --pd-line-strong: #334766;
-      --pd-text: #e8eef8;
-      --pd-muted: #94a3b8;
-      --pd-accent: #3b82f6;
-      --pd-accent-strong: #2563eb;
-      --pd-success: #34d399;
-      --pd-success-bg: rgba(52, 211, 153, 0.12);
-      --pd-output-bg: #0f1729;
+    body[data-prodraft-theme='oreo-mix'] {
+      --pd-bg: #faf7f2; --pd-surface: #ffffff; --pd-line: #ddd4c7; --pd-line-strong: #c9bfb0;
+      --pd-text: #1f1a17; --pd-muted: #6b5f56; --pd-accent: #3c2f2f; --pd-accent-strong: #2a2120;
+      --pd-success: #2f855a; --pd-success-bg: #e6f4ec; --pd-output-bg: #fffdf9;
     }
-
-    body[data-prodraft-theme='light'] {
-      --pd-bg: #f7f8fb;
-      --pd-surface: #ffffff;
-      --pd-line: #dbe3f0;
-      --pd-line-strong: #b8c7df;
-      --pd-text: #10233f;
-      --pd-muted: #516684;
-      --pd-accent: #2563eb;
-      --pd-accent-strong: #1d4ed8;
-      --pd-success: #059669;
-      --pd-success-bg: #ecfdf5;
-      --pd-output-bg: #fbfdff;
+    body[data-prodraft-theme='cherryvines'] {
+      --pd-bg: #2a1218; --pd-surface: #3f1a24; --pd-line: #5a2430; --pd-line-strong: #742f3f;
+      --pd-text: #ffe8ec; --pd-muted: #d49aa6; --pd-accent: #e53e5e; --pd-accent-strong: #c12a49;
+      --pd-success: #ff8fab; --pd-success-bg: rgba(229, 62, 94, 0.16); --pd-output-bg: #34161e;
+    }
+    body[data-prodraft-theme='dracula'] {
+      --pd-bg: #282a36; --pd-surface: #343746; --pd-line: #44475a; --pd-line-strong: #6272a4;
+      --pd-text: #f8f8f2; --pd-muted: #bd93f9; --pd-accent: #bd93f9; --pd-accent-strong: #9580dd;
+      --pd-success: #50fa7b; --pd-success-bg: rgba(80, 250, 123, 0.12); --pd-output-bg: #21222c;
+    }
+    body[data-prodraft-theme='corporate-light'] {
+      --pd-bg: #f7f8fb; --pd-surface: #ffffff; --pd-line: #dbe3f0; --pd-line-strong: #b8c7df;
+      --pd-text: #10233f; --pd-muted: #516684; --pd-accent: #2563eb; --pd-accent-strong: #1d4ed8;
+      --pd-success: #059669; --pd-success-bg: #ecfdf5; --pd-output-bg: #fbfdff;
+    }
+    body[data-prodraft-theme='midnight-blue'] {
+      --pd-bg: #0b1220; --pd-surface: #111b2e; --pd-line: #24324a; --pd-line-strong: #334766;
+      --pd-text: #e8eef8; --pd-muted: #94a3b8; --pd-accent: #3b82f6; --pd-accent-strong: #2563eb;
+      --pd-success: #34d399; --pd-success-bg: rgba(52, 211, 153, 0.12); --pd-output-bg: #0f1729;
     }
 
     * { box-sizing: border-box; }
 
     body {
-      width: 360px;
+      width: 680px;
       margin: 0;
       padding: 14px;
       background: var(--pd-bg);
@@ -51,51 +49,35 @@
       border: 1px solid var(--pd-line);
       border-radius: 12px;
       padding: 12px 14px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
-    .header-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
+    .header-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
     .header-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: var(--pd-accent);
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      flex-shrink: 0;
+      width: 32px; height: 32px; border-radius: 10px; background: var(--pd-accent); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;
     }
 
-    .header-copy strong {
-      display: block;
-      font-size: 15px;
-      letter-spacing: -0.01em;
-    }
+    .header-copy strong { display: block; font-size: 15px; letter-spacing: -0.01em; }
+    .header-copy span { font-size: 11px; color: var(--pd-muted); }
 
-    .header-copy span {
-      font-size: 11px;
-      color: var(--pd-muted);
-    }
-
-    .theme-toggle {
-      border: 1px solid var(--pd-line);
-      background: transparent;
-      color: var(--pd-text);
+    .theme-select {
+      border: 1px solid var(--pd-line-strong);
       border-radius: 8px;
-      width: 32px;
-      height: 32px;
+      background: var(--pd-surface);
+      color: var(--pd-text);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 8px;
       cursor: pointer;
-      font-size: 14px;
-      line-height: 1;
-      flex-shrink: 0;
+    }
+
+    .controls-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
     }
 
     .card {
@@ -103,94 +85,54 @@
       border: 1px solid var(--pd-line);
       border-radius: 12px;
       padding: 12px;
-      margin-bottom: 10px;
     }
 
     .label {
-      font-size: 11px;
-      color: var(--pd-muted);
-      font-weight: 700;
-      margin-bottom: 6px;
-      display: block;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
+      font-size: 11px; color: var(--pd-muted); font-weight: 700; margin-bottom: 6px;
+      display: block; text-transform: uppercase; letter-spacing: 0.07em;
     }
 
     textarea, select {
-      width: 100%;
-      background: var(--pd-surface);
-      border: 1px solid var(--pd-line-strong);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 14px;
-      color: var(--pd-text);
-      outline: none;
-      font-family: inherit;
+      width: 100%; background: var(--pd-surface); border: 1px solid var(--pd-line-strong);
+      border-radius: 10px; padding: 10px 12px; font-size: 14px; color: var(--pd-text);
+      outline: none; font-family: inherit;
     }
 
-    textarea:focus, select:focus {
-      border-color: var(--pd-accent);
-    }
+    textarea:focus, select:focus { border-color: var(--pd-accent); }
 
-    #rawInput { height: 96px; resize: vertical; margin-bottom: 0; }
-
-    #outputArea {
-      height: 150px;
-      margin-bottom: 0;
-      background: var(--pd-output-bg);
-      color: var(--pd-muted);
-    }
-
-    .toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      border: 1px solid var(--pd-line-strong);
-      border-radius: 10px;
-      background: var(--pd-surface);
-      color: var(--pd-text);
-      padding: 10px 12px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-bottom: 0;
-    }
-
-    .toggle span,
-    .toggle strong { color: var(--pd-muted); font-weight: 700; }
-
-    .toggle[data-active="true"] {
-      border-color: var(--pd-success);
-      background: var(--pd-success-bg);
-    }
-
-    .toggle[data-active="true"] strong { color: var(--pd-success); }
-
-    button.action {
-      width: 100%;
-      font-weight: 700;
-      padding: 11px 12px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 14px;
-    }
-
-    #generateBtn {
-      background: var(--pd-accent);
-      color: white;
+    .editor-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
       margin-bottom: 10px;
     }
 
+    .editor-row textarea { min-height: 150px; resize: vertical; }
+
+    #outputArea { background: var(--pd-output-bg); color: var(--pd-muted); }
+
+    .toggle {
+      display: flex; align-items: center; justify-content: space-between; width: 100%;
+      border: 1px solid var(--pd-line-strong); border-radius: 10px; background: var(--pd-surface);
+      color: var(--pd-text); padding: 10px 12px; cursor: pointer; font-size: 13px;
+    }
+
+    .toggle span, .toggle strong { color: var(--pd-muted); font-weight: 700; }
+    .toggle[data-active="true"] { border-color: var(--pd-success); background: var(--pd-success-bg); }
+    .toggle[data-active="true"] strong { color: var(--pd-success); }
+
+    button.action {
+      width: 100%; font-weight: 700; padding: 11px 12px; border-radius: 10px;
+      border: none; cursor: pointer; font-family: inherit; font-size: 14px;
+    }
+
+    #generateBtn { background: var(--pd-accent); color: white; margin-bottom: 10px; }
     #generateBtn:hover { background: var(--pd-accent-strong); }
     #generateBtn:disabled { background: #64748b; cursor: not-allowed; }
 
     #copyBtn {
-      background: var(--pd-surface);
-      border: 1px solid var(--pd-line-strong);
-      color: var(--pd-text);
-      display: none;
+      background: var(--pd-surface); border: 1px solid var(--pd-line-strong);
+      color: var(--pd-text); display: none; margin-bottom: 10px;
     }
 
     #copyBtn.visible { display: block; }
@@ -198,26 +140,14 @@
     #copyBtn.success { background: var(--pd-success); border-color: var(--pd-success); color: #fff; }
 
     .usage-card {
-      margin-top: 10px;
-      padding: 12px;
-      border: 1px solid var(--pd-line);
-      border-radius: 12px;
-      background: var(--pd-surface);
+      padding: 12px; border: 1px solid var(--pd-line); border-radius: 12px; background: var(--pd-surface);
     }
 
-    .usage-text {
-      margin: 0 0 10px;
-      font-size: 12px;
-      color: var(--pd-muted);
-    }
-
-    .upgrade {
-      background: var(--pd-accent);
-      color: #fff;
-    }
+    .usage-text { margin: 0 0 10px; font-size: 12px; color: var(--pd-muted); }
+    .upgrade { background: var(--pd-accent); color: #fff; }
   </style>
 </head>
-<body data-prodraft-theme="dark">
+<body data-prodraft-theme="oreo-mix">
   <div class="header">
     <div class="header-main">
       <div class="header-badge">P</div>
@@ -226,33 +156,34 @@
         <span>Polish messy notes into email</span>
       </div>
     </div>
-    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to light theme">☀️</button>
+    <select id="themeSelect" class="theme-select" aria-label="Color theme"></select>
   </div>
 
-  <div class="card">
-    <label class="label" for="rawInput">Raw thoughts</label>
-    <textarea id="rawInput" placeholder="e.g., tell john the report is late, sorry about that"></textarea>
+  <div class="controls-row">
+    <div class="card">
+      <label class="label" for="toneSelect">Tone</label>
+      <select id="toneSelect"></select>
+    </div>
+    <div class="card">
+      <button id="shortToggle" class="toggle" type="button" data-active="false">
+        <span>Short + simple</span>
+        <strong>Off</strong>
+      </button>
+    </div>
   </div>
 
-  <div class="card">
-    <label class="label" for="toneSelect">Tone</label>
-    <select id="toneSelect"></select>
-  </div>
-
-  <div class="card">
-    <button id="shortToggle" class="toggle" type="button" data-active="false">
-      <span>Short + simple</span>
-      <strong>Off</strong>
-    </button>
+  <div class="editor-row">
+    <div class="card">
+      <label class="label" for="rawInput">Raw thoughts</label>
+      <textarea id="rawInput" placeholder="e.g., tell john the report is late, sorry about that"></textarea>
+    </div>
+    <div class="card">
+      <label class="label" for="outputArea">Polished email</label>
+      <textarea id="outputArea" readonly placeholder="Your polished email will appear here..."></textarea>
+    </div>
   </div>
 
   <button id="generateBtn" class="action" type="button">Translate to Professional</button>
-
-  <div class="card">
-    <label class="label" for="outputArea">Polished email</label>
-    <textarea id="outputArea" readonly placeholder="Your polished email will appear here..."></textarea>
-  </div>
-
   <button id="copyBtn" class="action" type="button">Copy to Clipboard</button>
 
   <div class="usage-card">

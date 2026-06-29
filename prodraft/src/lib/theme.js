@@ -1,5 +1,5 @@
 export const THEME_STORAGE_KEY = 'prodraft-theme';
-export const DEFAULT_THEME = 'dark';
+export const DEFAULT_THEME = 'light';
 
 export function normalizeTheme(theme) {
   return theme === 'light' ? 'light' : 'dark';

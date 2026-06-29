@@ -64,6 +64,11 @@ function updateManifestHostPermissions(origin) {
 }
 
 function main() {
+  if (!fs.existsSync(extensionDir) || !fs.existsSync(sharedSourcePath)) {
+    console.log('Skipping extension sync (extension/shared folders not present in this environment).');
+    return;
+  }
+
   let envText = '';
   if (fs.existsSync(envPath)) {
     envText = fs.readFileSync(envPath, 'utf8');
