@@ -3,18 +3,36 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
-    "dev": "vite",
+    "sync:extension-config": "node scripts/sync-extension-config.cjs",
+    "predev": "npm run sync:extension-config",
+    "prebuild": "npm run sync:extension-config",
+    "prestart": "npm run sync:extension-config",
+    "predist": "npm run sync:extension-config",
+    "predist:win": "npm run sync:extension-config",
+    "predist:portable": "npm run sync:extension-config",
+    "dev": "npm run dev:web",
+    "dev:web": "vite --port 5173 --strictPort",
+    "dev:electron": "wait-on tcp:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron .",
+    "start": "electron .",
     "build": "vite build",
+    "build:web": "vite build",
+    "dist": "npm run build:web && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+    "dist:win": "npm run build:web && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis",
+    "dist:portable": "npm run build:web && cross-env CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win portable",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "pack": "electron-builder --dir"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",
+    "@upstash/redis": "^1.38.0",
     "lucide": "^1.3.0",
     "lucide-react": "^1.21.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "stripe": "^22.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -22,12 +40,46 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "electron": "^37.1.0",
+    "electron-builder": "^26.15.3",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.19",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "wait-on": "^8.0.4"
+  },
+  "build": {
+    "appId": "com.prodraft.desktop",
+    "productName": "ProDraft",
+    "icon": "public/prodraft-icon.ico",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }

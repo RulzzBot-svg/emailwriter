@@ -1,0 +1,15 @@
+import { handlePortalRequest } from '../handlers.js';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: { message: 'Method not allowed.' } });
+    return;
+  }
+
+  try {
+    const result = await handlePortalRequest(req);
+    res.status(result.status).json(result.body);
+  } catch (error) {
+    res.status(500).json({ error: { message: error?.message || 'Could not open billing portal.' } });
+  }
+}

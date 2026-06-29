@@ -1,53 +1,270 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <style>
-    body { width: 350px; height: 500px; margin: 0; padding: 16px; background-color: #0f172a; color: white; font-family: system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+    body[data-prodraft-theme='dark'] {
+      --pd-bg: #0b1220;
+      --pd-surface: #111b2e;
+      --pd-line: #24324a;
+      --pd-line-strong: #334766;
+      --pd-text: #e8eef8;
+      --pd-muted: #94a3b8;
+      --pd-accent: #3b82f6;
+      --pd-accent-strong: #2563eb;
+      --pd-success: #34d399;
+      --pd-success-bg: rgba(52, 211, 153, 0.12);
+      --pd-output-bg: #0f1729;
+    }
+
+    body[data-prodraft-theme='light'] {
+      --pd-bg: #f7f8fb;
+      --pd-surface: #ffffff;
+      --pd-line: #dbe3f0;
+      --pd-line-strong: #b8c7df;
+      --pd-text: #10233f;
+      --pd-muted: #516684;
+      --pd-accent: #2563eb;
+      --pd-accent-strong: #1d4ed8;
+      --pd-success: #059669;
+      --pd-success-bg: #ecfdf5;
+      --pd-output-bg: #fbfdff;
+    }
+
     * { box-sizing: border-box; }
-    .header { background-color: #2563eb; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-weight: bold; text-align: center; font-size: 16px; }
-    .label { font-size: 12px; color: #94a3b8; font-weight: bold; margin-bottom: 6px; display: block; }
-    textarea { width: 100%; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 10px; font-size: 14px; color: white; outline: none; margin-bottom: 16px; font-family: inherit; resize: none; }
-    select { width: 100%; background-color: #1e293b; border: 1px solid #475569; border-radius: 8px; padding: 10px; font-size: 14px; color: white; outline: none; margin-bottom: 16px; font-family: inherit; }
-    textarea:focus { border-color: #3b82f6; }
-    select:focus { border-color: #3b82f6; }
-    #rawInput { height: 100px; }
-    #outputArea { height: 180px; margin-bottom: 12px; background-color: #0f172a; border-color: #334155; color: #cbd5e1; }
-    button { width: 100%; font-weight: bold; padding: 10px; border-radius: 8px; border: none; cursor: pointer; transition: background-color 0.2s; font-family: inherit; font-size: 14px; }
-    #generateBtn { background-color: #3b82f6; color: white; margin-bottom: 16px; }
-    #generateBtn:hover { background-color: #2563eb; }
-    #generateBtn:disabled { background-color: #475569; cursor: not-allowed; }
-    #copyBtn { background-color: #334155; color: white; display: none; }
+
+    body {
+      width: 360px;
+      margin: 0;
+      padding: 14px;
+      background: var(--pd-bg);
+      color: var(--pd-text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--pd-surface);
+      border: 1px solid var(--pd-line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .header-main {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .header-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--pd-accent);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .header-copy strong {
+      display: block;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+
+    .header-copy span {
+      font-size: 11px;
+      color: var(--pd-muted);
+    }
+
+    .theme-toggle {
+      border: 1px solid var(--pd-line);
+      background: transparent;
+      color: var(--pd-text);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .card {
+      background: var(--pd-surface);
+      border: 1px solid var(--pd-line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-size: 11px;
+      color: var(--pd-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    textarea, select {
+      width: 100%;
+      background: var(--pd-surface);
+      border: 1px solid var(--pd-line-strong);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--pd-text);
+      outline: none;
+      font-family: inherit;
+    }
+
+    textarea:focus, select:focus {
+      border-color: var(--pd-accent);
+    }
+
+    #rawInput { height: 96px; resize: vertical; margin-bottom: 0; }
+
+    #outputArea {
+      height: 150px;
+      margin-bottom: 0;
+      background: var(--pd-output-bg);
+      color: var(--pd-muted);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      border: 1px solid var(--pd-line-strong);
+      border-radius: 10px;
+      background: var(--pd-surface);
+      color: var(--pd-text);
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 0;
+    }
+
+    .toggle span,
+    .toggle strong { color: var(--pd-muted); font-weight: 700; }
+
+    .toggle[data-active="true"] {
+      border-color: var(--pd-success);
+      background: var(--pd-success-bg);
+    }
+
+    .toggle[data-active="true"] strong { color: var(--pd-success); }
+
+    button.action {
+      width: 100%;
+      font-weight: 700;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    #generateBtn {
+      background: var(--pd-accent);
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    #generateBtn:hover { background: var(--pd-accent-strong); }
+    #generateBtn:disabled { background: #64748b; cursor: not-allowed; }
+
+    #copyBtn {
+      background: var(--pd-surface);
+      border: 1px solid var(--pd-line-strong);
+      color: var(--pd-text);
+      display: none;
+    }
+
     #copyBtn.visible { display: block; }
-    #copyBtn:hover { background-color: #475569; }
-    #copyBtn.success { background-color: #10b981; }
+    #copyBtn:hover { border-color: var(--pd-accent); color: var(--pd-accent); }
+    #copyBtn.success { background: var(--pd-success); border-color: var(--pd-success); color: #fff; }
+
+    .usage-card {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px solid var(--pd-line);
+      border-radius: 12px;
+      background: var(--pd-surface);
+    }
+
+    .usage-text {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: var(--pd-muted);
+    }
+
+    .upgrade {
+      background: var(--pd-accent);
+      color: #fff;
+    }
   </style>
 </head>
-<body>
-  <div class="header">✨ ProDraft</div>
-  
-  <label class="label">1. Raw Thoughts</label>
-  <textarea id="rawInput" placeholder="e.g., tell john the report is late..."></textarea>
+<body data-prodraft-theme="dark">
+  <div class="header">
+    <div class="header-main">
+      <div class="header-badge">P</div>
+      <div class="header-copy">
+        <strong>ProDraft</strong>
+        <span>Polish messy notes into email</span>
+      </div>
+    </div>
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to light theme">☀️</button>
+  </div>
 
-  <label class="label">2. Tone</label>
-  <select id="toneSelect">
-    <option value="professional" selected>Professional</option>
-    <option value="casual">Casual</option>
-    <option value="formal">Formal</option>
-    <option value="friendly">Friendly</option>
-    <option value="confident">Confident</option>
-    <option value="empathetic">Empathetic</option>
-    <option value="concise">Concise</option>
-    <option value="persuasive">Persuasive</option>
-  </select>
-  
-  <button id="generateBtn">Translate to Professional</button>
-  
-  <label class="label">3. Corporate Email</label>
-  <textarea id="outputArea" readonly placeholder="Your corporate-approved email will appear here..."></textarea>
-  
-  <button id="copyBtn">Copy to Clipboard</button>
-  
+  <div class="card">
+    <label class="label" for="rawInput">Raw thoughts</label>
+    <textarea id="rawInput" placeholder="e.g., tell john the report is late, sorry about that"></textarea>
+  </div>
+
+  <div class="card">
+    <label class="label" for="toneSelect">Tone</label>
+    <select id="toneSelect"></select>
+  </div>
+
+  <div class="card">
+    <button id="shortToggle" class="toggle" type="button" data-active="false">
+      <span>Short + simple</span>
+      <strong>Off</strong>
+    </button>
+  </div>
+
+  <button id="generateBtn" class="action" type="button">Translate to Professional</button>
+
+  <div class="card">
+    <label class="label" for="outputArea">Polished email</label>
+    <textarea id="outputArea" readonly placeholder="Your polished email will appear here..."></textarea>
+  </div>
+
+  <button id="copyBtn" class="action" type="button">Copy to Clipboard</button>
+
+  <div class="usage-card">
+    <p id="usageText" class="usage-text">Loading usage...</p>
+    <button id="upgradeBtn" class="action upgrade" type="button" style="display:none;">Upgrade to Pro</button>
+    <button id="manageBtn" class="action" type="button" style="display:none;">Manage billing</button>
+  </div>
+
+  <script src="extension-config.js"></script>
+  <script src="client-id.js"></script>
+  <script src="theme.js"></script>
+  <script src="prodraft-shared.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

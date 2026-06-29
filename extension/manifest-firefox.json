@@ -1,21 +1,22 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "ProDraft Email Polisher",
-  "version": "1.3.0",
+  "version": "1.2.0",
   "description": "Turn your messy thoughts into professional emails.",
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Open ProDraft"
   },
   "permissions": [
     "clipboardWrite",
     "storage",
-    "tabs"
-  ],
-  "host_permissions": [
     "http://localhost:5173/*",
     "http://127.0.0.1:5173/*",
-    "http://127.0.0.1/*"
+    "http://127.0.0.1/*",
+    "https://mail.google.com/*",
+    "https://outlook.office.com/*",
+    "https://outlook.live.com/*",
+    "https://mail.yahoo.com/*"
   ],
   "content_scripts": [
     {
@@ -27,7 +28,6 @@
       ],
       "js": [
         "extension-config.js",
-        "client-id.js",
         "theme.js",
         "prodraft-shared.js",
         "content-script.js"

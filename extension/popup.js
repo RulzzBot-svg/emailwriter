@@ -1,142 +1,145 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const generateBtn = document.getElementById('generateBtn');
-    const copyBtn = document.getElementById('copyBtn');
-    const rawInput = document.getElementById('rawInput');
-    const toneSelect = document.getElementById('toneSelect');
-    const outputArea = document.getElementById('outputArea');
-    const modelName = 'gemini-3.5-flash';
+document.addEventListener('DOMContentLoaded', async () => {
+  const { buildEmailPrompt, generateEmail, TONES, fetchUsage, startCheckout, openBillingPortal } = globalThis.ProDraftShared;
+  const { getClientId } = globalThis.ProDraftClient;
+  const {
+    getTheme,
+    setTheme,
+    applyTheme,
+    themeToggleIcon,
+    themeToggleLabel,
+  } = globalThis.ProDraftTheme;
+  const apiBase = String(globalThis.PRODRAFT_API_BASE_URL || '').trim();
 
-    // Paste your free Google AI Studio key here when available:
-    const apiKey = "";
+  const generateBtn = document.getElementById('generateBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const rawInput = document.getElementById('rawInput');
+  const toneSelect = document.getElementById('toneSelect');
+  const shortToggle = document.getElementById('shortToggle');
+  const outputArea = document.getElementById('outputArea');
+  const themeToggle = document.getElementById('themeToggle');
+  const usageText = document.getElementById('usageText');
+  const upgradeBtn = document.getElementById('upgradeBtn');
+  const manageBtn = document.getElementById('manageBtn');
 
-    function isLikelyGeminiApiKey(key) {
-        if (typeof key !== 'string') return false;
-        const trimmed = key.trim();
-        return trimmed.startsWith('AQ.') || trimmed.startsWith('AIza');
+  const clientId = await getClientId();
+  let currentTheme = await getTheme();
+  applyTheme(document.body, currentTheme);
+  themeToggle.textContent = themeToggleIcon(currentTheme);
+  themeToggle.setAttribute('aria-label', themeToggleLabel(currentTheme));
+
+  themeToggle.addEventListener('click', async () => {
+    currentTheme = await setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    applyTheme(document.body, currentTheme);
+    themeToggle.textContent = themeToggleIcon(currentTheme);
+    themeToggle.setAttribute('aria-label', themeToggleLabel(currentTheme));
+  });
+
+  async function refreshUsage() {
+    if (!apiBase) {
+      usageText.textContent = 'API not configured.';
+      return;
     }
 
-    function getGeminiErrorMessage(payload) {
-        const message = payload?.error?.message;
-        if (!message) return 'Unknown API error.';
-        if (/API key not valid/i.test(message)) {
-            return 'Invalid API key. Gemini keys usually start with "AQ." (legacy keys may start with "AIza").';
-        }
-        if (/quota|rate|429/i.test(message)) {
-            return 'Rate limited or quota exceeded. Try again shortly or check your Google AI quota.';
-        }
-        return message;
+    try {
+      const usage = await fetchUsage({ apiBase, clientId });
+      usageText.textContent = `${usage.planName}: ${usage.used}/${usage.limit} polishes this month`;
+
+      if (usage.planId === 'pro') {
+        upgradeBtn.style.display = 'none';
+        manageBtn.style.display = 'block';
+      } else {
+        upgradeBtn.style.display = usage.billingEnabled ? 'block' : 'none';
+        manageBtn.style.display = 'none';
+      }
+    } catch (error) {
+      usageText.textContent = error?.message || 'Could not load usage.';
+    }
+  }
+
+  upgradeBtn.addEventListener('click', async () => {
+    try {
+      const url = await startCheckout({ apiBase, clientId });
+      chrome.tabs.create({ url });
+    } catch (error) {
+      usageText.textContent = error?.message || 'Checkout unavailable.';
+    }
+  });
+
+  manageBtn.addEventListener('click', async () => {
+    try {
+      const url = await openBillingPortal({ apiBase, clientId });
+      chrome.tabs.create({ url });
+    } catch (error) {
+      usageText.textContent = error?.message || 'Billing portal unavailable.';
+    }
+  });
+
+  TONES.forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    if (value === 'professional') {
+      option.selected = true;
+    }
+    toneSelect.appendChild(option);
+  });
+
+  shortToggle.addEventListener('click', () => {
+    const isActive = shortToggle.dataset.active === 'true';
+    shortToggle.dataset.active = String(!isActive);
+    shortToggle.querySelector('strong').textContent = isActive ? 'Off' : 'On';
+  });
+
+  generateBtn.addEventListener('click', async () => {
+    const text = rawInput.value.trim();
+    if (!text) {
+      return;
     }
 
-    function getToneInstruction(tone) {
-        const toneMap = {
-            professional: 'Use a polished, business-professional tone.',
-            casual: 'Use a relaxed, natural conversational tone while staying clear.',
-            formal: 'Use a formal, precise, and respectful corporate tone.',
-            friendly: 'Use a warm, approachable, and positive tone.',
-            empathetic: 'Use a considerate and understanding tone.',
-            concise: 'Use a concise, efficient tone with short, clear sentences.',
-        };
-        return toneMap[tone] || toneMap.professional;
+    if (!apiBase) {
+      outputArea.value = 'Error: ProDraft API URL is not configured. Set PRODRAFT_API_BASE_URL in prodraft/.env and run npm run sync:extension-config.';
+      return;
     }
 
-    generateBtn.addEventListener('click', async function() {
-        const text = rawInput.value.trim();
-        if (!text) return;
-        if (!apiKey.trim()) {
-            outputArea.value = "Error: Paste your Gemini API key into popup.js first.";
-            return;
-        }
-        if (!isLikelyGeminiApiKey(apiKey)) {
-            outputArea.value = "Error: Key format looks invalid. Gemini keys currently look like 'AQ....' (legacy keys may start with 'AIza').";
-            return;
-        }
+    generateBtn.innerText = 'Polishing with AI...';
+    generateBtn.disabled = true;
 
-        generateBtn.innerText = "Polishing with AI...";
-        generateBtn.disabled = true;
-        
-        try {
-            // The prompt we are secretly sending to Gemini behind the scenes
-            const selectedTone = toneSelect?.value || 'professional';
-            const toneInstruction = getToneInstruction(selectedTone);
-            const prompt = `Turn these messy notes into a clear corporate email body. ${toneInstruction} Do not include subject lines, just the body. Here are the notes: ${text}`;
-            
-            let data = null;
-            let success = false;
-            let lastError = 'Failed to connect to the AI.';
-            let delay = 1000;
+    try {
+      const prompt = buildEmailPrompt({
+        draftNotes: text,
+        tone: toneSelect.value,
+        shortSimple: shortToggle.dataset.active === 'true',
+      });
 
-            // Calling the Gemini API with exponential backoff retries
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-goog-api-key': apiKey.trim()
-                        },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }]
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        data = await response.json();
-                        success = true;
-                        break;
-                    }
+      const emailText = await generateEmail({ apiBase, prompt, clientId });
+      outputArea.value = emailText;
+      copyBtn.classList.add('visible');
+      await refreshUsage();
+    } catch (error) {
+      outputArea.value = `Whoops, ProDraft request failed: ${error?.message || 'Unknown error.'}`;
+      if (error?.code === 'USAGE_LIMIT') {
+        await refreshUsage();
+      }
+    } finally {
+      generateBtn.innerText = 'Translate to Professional';
+      generateBtn.disabled = false;
+    }
+  });
 
-                    let errorPayload = null;
-                    try {
-                        errorPayload = await response.json();
-                    } catch (parseErr) {
-                        errorPayload = null;
-                    }
+  copyBtn.addEventListener('click', async () => {
+    const text = outputArea.value.trim();
+    if (!text) {
+      return;
+    }
 
-                    lastError = getGeminiErrorMessage(errorPayload);
+    await navigator.clipboard.writeText(text);
+    copyBtn.innerText = 'Copied!';
+    copyBtn.classList.add('success');
+    setTimeout(() => {
+      copyBtn.innerText = 'Copy to Clipboard';
+      copyBtn.classList.remove('success');
+    }, 2000);
+  });
 
-                    // Do not retry client-side errors except 429.
-                    if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-                        break;
-                    }
-                } catch (err) {
-                    lastError = err?.message || 'Network error while contacting Gemini API.';
-                }
-                
-                if (!success && i < 4) {
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2;
-                }
-            }
-
-            if (!success || !data) {
-                throw new Error(lastError);
-            }
-            
-            // Extracting the text from Gemini's response
-            const emailText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-            if (!emailText.trim()) {
-                throw new Error('Gemini returned an empty response.');
-            }
-            
-            outputArea.value = emailText.trim();
-            copyBtn.classList.add('visible');
-
-        } catch (error) {
-            outputArea.value = `Whoops, Gemini request failed: ${error?.message || 'Unknown error.'}`;
-        } finally {
-            generateBtn.innerText = "Translate to Professional";
-            generateBtn.disabled = false;
-        }
-    });
-
-    copyBtn.addEventListener('click', function() {
-        outputArea.select();
-        document.execCommand('copy');
-        copyBtn.innerText = "Copied!";
-        copyBtn.classList.add('success');
-        setTimeout(() => {
-            copyBtn.innerText = "Copy to Clipboard";
-            copyBtn.classList.remove('success');
-        }, 2000);
-    });
+  await refreshUsage();
 });

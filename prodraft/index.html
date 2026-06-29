@@ -1,11 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <script src="https://cdn.tailwindcss.com"></script>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>prodraft</title>
+    <meta
+      name="description"
+      content="ProDraft turns messy notes into polished, professional email drafts. Try it in your browser or install the extension for Gmail and Outlook."
+    />
+    <meta property="og:title" content="ProDraft — Polish messy emails" />
+    <meta
+      property="og:description"
+      content="Turn rough notes into send-ready email in seconds. Browser extension and live demo."
+    />
+    <meta property="og:type" content="website" />
+    <title>ProDraft — Polish messy emails</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('prodraft-theme');
+          document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
