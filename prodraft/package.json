@@ -57,7 +57,7 @@
   "build": {
     "appId": "com.prodraft.desktop",
     "productName": "ProDraft",
-    "icon": "public/prodraft-icon.ico",
+    "icon": "public/prodraft-main-icon.png",
     "files": [
       "dist/**/*",
       "electron/**/*",

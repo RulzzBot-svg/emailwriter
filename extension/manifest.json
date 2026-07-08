@@ -3,9 +3,19 @@
   "name": "ProDraft Email Polisher",
   "version": "1.4.0",
   "description": "Turn your messy thoughts into professional emails.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Open ProDraft"
+    "default_title": "Open ProDraft",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "permissions": [
     "clipboardWrite",

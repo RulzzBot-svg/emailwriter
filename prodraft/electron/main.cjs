@@ -204,7 +204,7 @@ async function createPanelWindow() {
     skipTaskbar: true,
     backgroundColor: '#08111f',
     autoHideMenuBar: true,
-    icon: path.join(__dirname, '..', 'public', 'prodraft-icon.ico'),
+    icon: path.join(__dirname, '..', 'public', 'prodraft-icon.png'),
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
