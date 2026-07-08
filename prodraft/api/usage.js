@@ -1,5 +1,5 @@
-import { handleUsageRequest } from './handlers.js';
-import { applyCors, handleCorsPreflight } from './cors.js';
+import { handleUsageRequest } from '../server/handlers.js';
+import { applyCors, handleCorsPreflight } from '../server/cors.js';
 
 export default async function handler(req, res) {
   if (handleCorsPreflight(req, res)) {

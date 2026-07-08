@@ -8,8 +8,8 @@ import {
   handleStripeWebhook,
   handleSuggestionsRequest,
   handleUsageRequest,
-} from './api/handlers.js'
-import { getClientIdFromRequest } from './api/billing.js'
+} from './server/handlers.js'
+import { getClientIdFromRequest } from './server/billing.js'
 
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 20;

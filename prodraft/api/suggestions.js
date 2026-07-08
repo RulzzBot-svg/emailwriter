@@ -4,7 +4,7 @@ import {
   MAX_EMAIL_LENGTH,
   MAX_NAME_LENGTH,
   MAX_SUGGESTION_LENGTH,
-} from './request-limits.js';
+} from '../server/request-limits.js';
 
 const buckets = new Map();
 const RATE_LIMIT_WINDOW_MS = 60_000;

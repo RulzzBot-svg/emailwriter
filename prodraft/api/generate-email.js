@@ -1,5 +1,5 @@
-import { handleGenerateEmailRequest } from './handlers.js';
-import { applyCors, handleCorsPreflight } from './cors.js';
+import { handleGenerateEmailRequest } from '../server/handlers.js';
+import { applyCors, handleCorsPreflight } from '../server/cors.js';
 
 const buckets = new Map();
 const RATE_LIMIT_WINDOW_MS = 60_000;

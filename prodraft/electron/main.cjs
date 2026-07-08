@@ -61,7 +61,7 @@ async function handleGenerateEmail(req, res) {
   }
 
   try {
-    const { handleGenerateEmailRequest } = await import('../api/handlers.js');
+    const { handleGenerateEmailRequest } = await import('../server/handlers.js');
     const result = await handleGenerateEmailRequest(req, parsed, serverApiKey);
     sendJson(res, result.status, result.body);
   } catch (error) {

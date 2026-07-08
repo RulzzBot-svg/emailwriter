@@ -1,4 +1,4 @@
-import { handleStripeWebhook } from '../handlers.js';
+import { handleStripeWebhook } from '../../server/handlers.js';
 
 export const config = {
   api: {
